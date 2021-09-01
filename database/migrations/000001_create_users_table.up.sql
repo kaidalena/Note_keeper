@@ -3,5 +3,6 @@ CREATE TABLE IF NOT EXISTS public.users(
    name text,
    login text UNIQUE,
    password text,
-   expired_at timestamp with time zone
+   registered_at timestamp with time zone DEFAULT now(),
+   expired_at timestamp with time zone DEFAULT now() + interval '2min'
 );

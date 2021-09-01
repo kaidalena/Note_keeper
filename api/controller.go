@@ -5,11 +5,13 @@ import (
 )
 
 func Login(login, password string) (database.User, error) {
-	user, err := database.GetUser(login, password)
+	var user database.User
 
-	if err == nil {
-		user.Notes, err = database.GetNotesByUser(user.ID)
-	}
+	err := user.Get(login, password)
 
 	return user, err
+}
+
+func SortNotes(user database.User, direction string) {
+	user.SortNotes(direction)
 }

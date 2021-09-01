@@ -19,8 +19,16 @@ func main() {
 
 	setDbHost()
 	user, err := api.Login("little_coon", api.GetHashFromPassword("pwd"))
-	fmt.Println(user)
+	//fmt.Println(user)
 	CheckError(err)
+
+	user.PrintNotes()
+	newNoteId := user.AddNote("Note from app")
+	fmt.Printf("Id new note = %d\n", newNoteId)
+
+	user.PrintNotes()
+	CheckError(user.DeleteNoteById(newNoteId))
+	user.PrintNotes()
 }
 
 func setDbHost() {
