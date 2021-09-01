@@ -6,16 +6,16 @@ import (
 )
 
 type Note struct {
-	ID int
-	//UserId int
-	Text       string
-	Created_at time.Time
+	ID int `json:"id"`
+	//UserId int			`json:"user_id"`
+	Text       string    `json:"note_text"`
+	Created_at time.Time `json:"created_at"`
 }
 
 func (n *Note) Init(userId int, noteText string) error {
-	q := fmt.Sprintf(`INSERT INTO %s (user_id, text_note) values (%d, '%s') RETURNING id;`,
+	q := fmt.Sprintf(`INSERT INTO %s (user_id, text_note) values (%d, '%s') RETURNING id, created_at;`,
 		notes_tabel, userId, noteText)
-	err := GetConn().QueryRow(q).Scan(&n.ID)
+	err := GetConn().QueryRow(q).Scan(&n.ID, &n.Created_at)
 
 	if err == nil {
 		n.Text = noteText

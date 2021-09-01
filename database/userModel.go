@@ -8,13 +8,17 @@ import (
 )
 
 type User struct {
-	ID    int
-	Name  string
-	Login string
-	//Password string
-	Registered_at time.Time
-	Expired_at    time.Time // user.Expired_at.Format("2006-01-02 15:04:05")
-	Notes         []Note
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Login string `json:"login"`
+	//Password string		`json:"password"`
+	Registered_at time.Time `json:"registered_at"`
+	Expired_at    time.Time `json:"expired_at"`
+	Notes         []Note    `json:"notes"`
+}
+
+func (u *User) IsEmpty() bool {
+	return u.ID == 0 && u.Login == "" && u.Registered_at.IsZero()
 }
 
 func (u *User) Get(login, password string) error {
@@ -36,7 +40,7 @@ func (u *User) PrintNotes() {
 	}
 }
 
-func (u *User) AddNote(textNote string) int {
+func (u *User) AddNote(textNote string) *Note {
 	var newNote Note
 	err := newNote.Init(u.ID, textNote)
 	if err != nil {
@@ -45,7 +49,7 @@ func (u *User) AddNote(textNote string) int {
 
 	u.Notes = append(u.Notes, newNote)
 
-	return newNote.ID
+	return &newNote
 }
 
 func (u *User) GetNoteById(noteId int) (*Note, int) {
@@ -73,12 +77,12 @@ func (u *User) SortNotes(direction string) {
 
 func (u *User) GetOldNotes(count int) []Note {
 	u.SortNotes("Asc")
-	return u.Notes[:count]
+	return copySlice(u.Notes[:count])
 }
 
 func (u *User) GetLastNotes(count int) []Note {
 	u.SortNotes("desc")
-	return u.Notes[:count]
+	return copySlice(u.Notes[:count])
 }
 
 func (u *User) DeleteNoteById(noteId int) error {
@@ -92,4 +96,10 @@ func (u *User) DeleteNoteById(noteId int) error {
 	}
 
 	return nil
+}
+
+func copySlice(arr []Note) []Note {
+	ans := make([]Note, len(arr))
+	copy(ans, arr)
+	return ans
 }
