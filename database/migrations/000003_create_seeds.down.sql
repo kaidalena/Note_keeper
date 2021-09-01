@@ -1,0 +1,1 @@
+-- delete from public.users where id in (1, 2);
