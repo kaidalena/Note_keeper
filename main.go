@@ -70,16 +70,32 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/note/first_and_last", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/note/first", func(w http.ResponseWriter, r *http.Request) {
 		if !user.IsEmpty() {
 			switch r.Method {
 			case "GET":
 
 				userJson, err := json.Marshal(struct {
-					Old_note  database.Note `json:"old_note"`
+					Old_note database.Note `json:"old_note"`
+				}{
+					Old_note: user.GetOldNotes(1)[0],
+				})
+				CheckError(err)
+				JsonResponse(w, userJson)
+			}
+		} else {
+			NotFoundHandler(w, "Authorization is required!")
+		}
+	})
+
+	http.HandleFunc("/note/last", func(w http.ResponseWriter, r *http.Request) {
+		if !user.IsEmpty() {
+			switch r.Method {
+			case "GET":
+
+				userJson, err := json.Marshal(struct {
 					Last_note database.Note `json:"last_note"`
 				}{
-					Old_note:  user.GetOldNotes(1)[0],
 					Last_note: user.GetLastNotes(1)[0],
 				})
 				CheckError(err)
