@@ -1,51 +1,11 @@
 version: "3.7"
 services:
-  db_cont:
-    image: postgres
-    container_name: db
-    networks:
-      new:
-        aliases:
-          - db_container
-    restart: always
-    env_file:
-      - .env
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-  migrate:
-    image: migrate/migrate
-    container_name: migrate
-    restart: on-failure
-    networks:
-      - new
-    volumes:
-      - ./database/migrations:/data/shortener/migrations
-    command: ["-path", "/data/shortener/migrations", "-database", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db_cont:5432/${POSTGRES_DB}?sslmode=disable", "up"]
-    depends_on:
-      - db_cont
-    links:
-      - db_cont
   server:
     container_name: server
     build:
       context: .
       dockerfile: Dockerfile
-    env_file: .env
     restart: on-failure
-    environment:
-      - DB_HOST=db_cont
-    networks:
-      - new
     ports:
       - "8080:8080"
-    depends_on:
-      - migrate
-    links:
-      - db_cont
     command: go run .
-volumes:
-  data:
-networks:
-  new:

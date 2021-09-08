@@ -23,3 +23,8 @@ func JsonResponse(w http.ResponseWriter, json_ans []byte) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json_ans)
 }
+
+func InnerErrorHandler(w http.ResponseWriter, err error) {
+	w.WriteHeader(500)
+	fmt.Fprint(w, err)
+}

@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"note_keeper/config"
-	"note_keeper/database"
-	"os"
+	"note_keeper/models"
 	"strconv"
 )
 
 var (
-	user database.User
+	user models.User
 	err  error
 )
 
@@ -24,7 +22,6 @@ func CheckError(err error) {
 
 func main() {
 	log.Println("------------------- Server start -------------------")
-	setDbHost()
 
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		user_login := r.URL.Query().Get("login")
@@ -48,10 +45,14 @@ func main() {
 				JsonResponse(w, userJson)
 			case "POST":
 				noteText := r.URL.Query().Get("note_text")
-				newNote := user.AddNote(noteText)
-				noteJson, err := json.Marshal(newNote)
-				CheckError(err)
-				JsonResponse(w, noteJson)
+				newNote, err := user.AddNote(noteText)
+				if err == nil {
+					noteJson, err := json.Marshal(newNote)
+					CheckError(err)
+					JsonResponse(w, noteJson)
+				} else {
+					InnerErrorHandler(w, err)
+				}
 			case "DELETE":
 				noteId, err := strconv.Atoi(r.URL.Query().Get("note_id"))
 				CheckError(err)
@@ -76,7 +77,7 @@ func main() {
 			case "GET":
 
 				userJson, err := json.Marshal(struct {
-					Old_note database.Note `json:"old_note"`
+					Old_note models.Note `json:"old_note"`
 				}{
 					Old_note: user.GetOldNotes(1)[0],
 				})
@@ -94,7 +95,7 @@ func main() {
 			case "GET":
 
 				userJson, err := json.Marshal(struct {
-					Last_note database.Note `json:"last_note"`
+					Last_note models.Note `json:"last_note"`
 				}{
 					Last_note: user.GetLastNotes(1)[0],
 				})
@@ -107,14 +108,4 @@ func main() {
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
-}
-
-func setDbHost() {
-	database_ip, ok := os.LookupEnv("DB_HOST")
-	if ok {
-		config.DB_conf.Host = database_ip
-		log.Printf("New database host has been set. New host = %s", database_ip)
-	} else {
-		log.Printf("Database host = %s", config.DB_conf.Host)
-	}
 }
